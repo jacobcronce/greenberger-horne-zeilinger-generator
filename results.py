@@ -1,4 +1,5 @@
 import cirq as cq
+import numpy as np
 
 class Results:
 
@@ -9,18 +10,26 @@ class Results:
 
     def __init__(self):
         self.statevector = None
-        self.density_matrix = None
-        self.simulator = None
+        self.density_matrix = cirq.DensityMatrixSimulator()
+        self.simulator = cirq.Simulator()
 
-    def simulate_statevector():
-        pass
+    def simulate_statevector(self, circuit):
+        result = self.simulator.simulate(circuit)
+        self.statevector = result.final_state_vector
+        return self.statevector
+
         #simulate a circuit and return the statevector
 
-    def simulate_density_matrix():
+    def simulate_density_matrix(self, circuit):
+        toReturn = self.density_matrix.simulate(circuit)
+        self.density_matrix = toReturn
+        return self.density_matrix
         pass
         #simulate a circuit with noise and return the density matrix
 
-    def density_matrix_from_statevector():
+    def density_matrix_from_statevector(self, statevector):
+        result = self.density_matrix_from_state_vector(statevector)
+        return result
         pass
         #Creates a denstiy matrix from a statevector
 
@@ -51,15 +60,17 @@ class Results:
         pass
         #compute trace distance between two states
         #return a double.
-    def average_metric(self):
+    def average_metric(self, metrics):
+        metrics = np.array(metrics)
+
+        return {
+            'mean': np.mean(metrics),
+            'std': np.std(metrics),
+            'min': np.min(metrics),
+            'max': np.max(metrics)
+        }
         pass
         #compute the average of all metrics
         #this includes fidelity, von neumann entropy, purity, and trace distance
         #also mean, std, min, max etc.   
         
-
-
-
-
-
-
