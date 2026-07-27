@@ -101,3 +101,12 @@ class Results:
         #compute the average of all metrics
         #this includes fidelity, von neumann entropy, purity, and trace distance
         #also mean, std, min, max etc. 
+    def neutral_atom_metrics(self):
+        return{
+            "fidelity": 0.0,
+            "density_matrix": "N/A",
+            "entropy": "N/A",
+            "purity": "N/A",
+            "trace_distance": "N/A"
+        }
+    #this method is specific for neutral atom qubits as the qubits themselves are lost
