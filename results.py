@@ -6,8 +6,6 @@ class Results:
 
     #Computes analysis metrics for quantum circuits.  
     
-    #Parameters: TBD but will likely taken in a simlulator. 
-    #Parameters: vectors will be representated using numpy. 
 
     def __init__(self):
         self.statevector = None
@@ -36,9 +34,13 @@ class Results:
     
     def fidelity(self, state1, state2):
 
+        if state1.ndim == 1:
+            state1 = self.density_matrix_from_statevector(state1)
+        if state2.ndim == 1:
+            state2 = self.density_matrix_from_statevector(state2)
         sqrt_rho = scipy.linalg.sqrtm(state1)
-        fidelity = np.trace(scipy.linalg.sqrtm(sqrt_rho @ state2 @ sqrt_rho)) ** 2
-        return fidelity
+        value = np.trace(scipy.linalg.sqrtm(sqrt_rho @ state2 @ sqrt_rho)) ** 2
+        return np.real(value)
 
 
         #calculate the fidelity between two quantum states
@@ -80,7 +82,7 @@ class Results:
         
         #Compute the purity
         #return a double
-    def trace_distance():
+    def trace_distance(self, state1, state2):
         delta = state1 - state2
         single_values = np.linalg.svd(delta, compute_uv=False)
         return 0.5 * np.sum(single_values)
@@ -98,5 +100,4 @@ class Results:
         pass
         #compute the average of all metrics
         #this includes fidelity, von neumann entropy, purity, and trace distance
-        #also mean, std, min, max etc.   
-        
+        #also mean, std, min, max etc. 
