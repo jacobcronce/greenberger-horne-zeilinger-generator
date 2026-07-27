@@ -1,4 +1,4 @@
-import cirq as cq
+import cirq 
 import numpy as np
 import scipy.linalg #for the matrix operations
 
@@ -24,14 +24,14 @@ class Results:
 
     def simulate_density_matrix(self, circuit):
         toReturn = self.DM_Simulator.simulate(circuit)
-        self.density_matrix = toReturn
+        self.density_matrix = toReturn.final_density_matrix
         return self.density_matrix
         
         #simulate a circuit with noise and return the density matrix
 
     def density_matrix_from_statevector(self, statevector):
-        result = self.density_matrix_from_state_vector(statevector)
-        return result
+        statevector = np.asarray(statevector, dtype=np.complex128)
+        return np.outer(statevector, np.conjugate(statevector))
         #Creates a denstiy matrix from a statevector
     
     def fidelity(self, state1, state2):
@@ -59,8 +59,20 @@ class Results:
         #Compute partial trace of density matrix
         ##### Come back to this later.  
 
-    def is_density_matrix():
-        pass
+    def is_density_matrix(self, matrix):
+        matrix = np.asarray(matrix)
+        if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+            return False
+        if not np.allclose(matrix, matrix.conj().T, atol=1e-8):
+            #Hermitian check
+            return False
+        if not np.isclose(np.trace(matrix), 1.0, atol=1e-8):
+            #Trace = 1.0 check
+            return False
+        eigvals = np.linalg.eigvalsh(matrix)
+        if np.any(eigvals < -1e-8):
+            return False #positive semidefinite check
+        return True
         #determine if a matrix is a valid density matrix
 
     def purity(self, density_matrix):
@@ -69,7 +81,9 @@ class Results:
         #Compute the purity
         #return a double
     def trace_distance():
-        pass
+        delta = state1 - state2
+        single_values = np.linalg.svd(delta, compute_uv=False)
+        return 0.5 * np.sum(single_values)
         #compute trace distance between two states
         #return a double.
     def average_metric(self, metrics):
