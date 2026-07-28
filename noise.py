@@ -1,7 +1,7 @@
 import cirq
 import numpy as np
 import random
-from cirq import cirq_AQT
+from cirq import aqt_device
 
 class Noise:
     
@@ -38,8 +38,7 @@ class Noise:
 
     def trapped_ion_noise(self):
         #applies noise to a trapped ion qubit architecture
-        #utilizes cirq 
-        self.circuit = self.circuit.with_noise(cirq_AQT.AQTNoiseModel())
+        #will use a simulator for feasibility
         pass
 
 
@@ -60,7 +59,7 @@ class Noise:
             gate_duration = 12e-7
             depolarizing_probability =  1-0.9985
             rydberg_decay_prob = 1 - np.exp(-gate_duration/88e-6)
-            self.circuit.append(cirq.amplitude_damp(rydberg_decay_prob).on_each(*qubits_participated))
+            self.circuit.append(cirq.amplitude_damping(rydberg_decay_prob).on_each(*qubits_participated))
         
         #Jones et. al
         dephasing_prob = 1 - np.exp(-gate_duration/0.034)
