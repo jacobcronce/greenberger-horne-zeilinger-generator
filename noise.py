@@ -1,7 +1,6 @@
 import cirq
 import numpy as np
 import random
-from cirq import aqt_device
 
 class Noise:
     
@@ -31,10 +30,10 @@ class Noise:
         self.circuit.append(cirq.depolarize(depolarizing_probability).on_each(*qubits_participated))
 
         #amplitude damping noise (T1 relaxation)
-        self.circuit.append(cirq.amplitude_damping(t1_prob).on_each(*qubits_participated))
+        self.circuit.append(cirq.amplitude_damp(t1_prob).on_each(*qubits_participated))
 
         #phase damping noise (T2 dephasing)
-        self.circuit.append(cirq.phase_damping(tphi_prob).on_each(*qubits_participated))
+        self.circuit.append(cirq.phase_damp(tphi_prob).on_each(*qubits_participated))
 
     def trapped_ion_noise(self):
         #applies noise to a trapped ion qubit architecture
@@ -59,13 +58,13 @@ class Noise:
             gate_duration = 12e-7
             depolarizing_probability =  1-0.9985
             rydberg_decay_prob = 1 - np.exp(-gate_duration/88e-6)
-            self.circuit.append(cirq.amplitude_damping(rydberg_decay_prob).on_each(*qubits_participated))
+            self.circuit.append(cirq.amplitude_damp(rydberg_decay_prob).on_each(*qubits_participated))
         
         #Jones et. al
         dephasing_prob = 1 - np.exp(-gate_duration/0.034)
 
         
-        self.circuit.append(cirq.phase_damping(dephasing_prob).on_each(*qubits_participated))
+        self.circuit.append(cirq.phase_damp(dephasing_prob).on_each(*qubits_participated))
         self.circuit.append(cirq.depolarize(depolarizing_probability).on_each(*qubits_participated))
         return False
 

@@ -16,12 +16,12 @@ class Setup:
         self.circuit=cirq.Circuit()
         noise_creator = Noise(self.circuit)
         self.circuit.append(cirq.H(self.qubits[0]))
-        noise_creator.superconducting_noise('H', self.qubits[0])
+        noise_creator.superconducting_noise('H', [self.qubits[0]])
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        noise_creator.superconducting_noise('CNOT', self.qubits[0], self.qubits[1])
+        noise_creator.superconducting_noise('CNOT', [self.qubits[0], self.qubits[1]])
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        noise_creator.superconducting_noise('CNOT', self.qubits[1], self.qubits[2])
-        self.circuit.append(cirq.measure.on_each(self.qubits))
+        noise_creator.superconducting_noise('CNOT', [self.qubits[1], self.qubits[2]])
+        self.circuit.append(cirq.measure(self.qubits))
     
     def create_trapped_ion_circuit(self):
         #create a GHZ state circuit with the specified number of qubits
@@ -29,7 +29,7 @@ class Setup:
         self.circuit.append(cirq.H(self.qubits[0]))
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        self.circuit.append(cirq.measure.on_each(self.qubits))
+        self.circuit.append(cirq.measure(self.qubits))
 
 
     def create_neutral_atom_circuit(self):
@@ -37,18 +37,18 @@ class Setup:
         self.circuit=cirq.Circuit()
         noise_creator = Noise(self.circuit)
         self.circuit.append(cirq.H(self.qubits[0]))
-        loss1 = noise_creator.neutral_atom_noise('H', self.qubits[0])
+        loss1 = noise_creator.neutral_atom_noise('H', [self.qubits[0]])
         if(loss1):
             return True
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        loss2 = noise_creator.neutral_atom_noise('CNOT', self.qubits[0], self.qubits[1])
+        loss2 = noise_creator.neutral_atom_noise('CNOT', [self.qubits[0], self.qubits[1]])
         if(loss2):
             return True
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        loss3 = noise_creator.neutral_atom_noise('CNOT', self.qubits[1], self.qubits[2])
+        loss3 = noise_creator.neutral_atom_noise('CNOT', [self.qubits[1], self.qubits[2]])
         if(loss3):
             return True
-        self.circuit.append(cirq.measure.on_each(self.qubits))
+        self.circuit.append(cirq.measure(self.qubits))
         return False
 
     def create_photonic_circuit(self):
@@ -56,18 +56,18 @@ class Setup:
         self.circuit=cirq.Circuit()
         noise_creator = Noise(self.circuit)
         self.circuit.append(cirq.H(self.qubits[0]))
-        loss1 = noise_creator.photonic_noise('H', self.qubits[0])
+        loss1 = noise_creator.photonic_noise('H', [self.qubits[0]])
         if(loss1):
             return True
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        loss2 = noise_creator.photonic_noise('CNOT', self.qubits[0], self.qubits[1])
+        loss2 = noise_creator.photonic_noise('CNOT', [self.qubits[0], self.qubits[1]])
         if(loss2):
             return True
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        loss3 = noise_creator.photonic_noise('CNOT', self.qubits[1], self.qubits[2])
+        loss3 = noise_creator.photonic_noise('CNOT', [self.qubits[1], self.qubits[2]])
         if(loss3):
             return True
-        self.circuit.append(cirq.measure.on_each(self.qubits))
+        self.circuit.append(cirq.measure(self.qubits))
         return False                       
 
     def get_circuit(self):

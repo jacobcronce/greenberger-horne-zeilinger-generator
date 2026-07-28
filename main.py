@@ -29,10 +29,17 @@ else:
     creator.create_photonic_circuit()
     circuit = creator.get_circuit()
 
-sim = cirq.Simulator()
+'''sim = cirq.Simulator()
 findings = sim.run(circuit, repetitions=1000)
 
-for i in range(findings):
+for i in range(findings):'''
+
+test = Results()
+vec = test.simulate_statevector(circuit)
+print(vec)
+matrix = test.simulate_density_matrix(circuit)
+print(matrix)
+
 
 
 #simulate circuit 1000x and for each simulation, measure the qubits and record the results
