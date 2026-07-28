@@ -13,17 +13,9 @@ class Results:
         self.density_matrix = None
         self.DM_Simulator = cirq.DensityMatrixSimulator()
         self.simulator = cirq.Simulator()
-        self.aqt_simulator = cirq_aqt.AQTSimulator()
 
     def simulate_statevector(self, circuit):
         result = self.simulator.simulate(circuit)
-        self.statevector = result.final_state_vector
-        return self.statevector
-
-        #simulate a circuit and return the statevector
-
-    def simulate_trapped_ion_statevector(self, circuit):
-        result = self.aqt_simulator.simulate(circuit)
         self.statevector = result.final_state_vector
         return self.statevector
 
