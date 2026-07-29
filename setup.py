@@ -38,20 +38,16 @@ class Setup:
         self.circuit = cirq.Circuit()
         noise_creator = Noise(self.circuit)
         self.circuit.append(cirq.H(self.qubits[0]))
-        loss1 = noise_creator.neutral_atom_noise("H", [self.qubits[0]])
+        loss1 = noise_creator.neutral_atom_noise("H", [self.qubits[0]], True)
         if loss1:
             self.qubit_loss = True
             return 
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        loss2 = noise_creator.neutral_atom_noise(
-            "CNOT", [self.qubits[0], self.qubits[1]]
-        )
+        loss2 = noise_creator.neutral_atom_noise("CNOT", [self.qubits[0], self.qubits[1]], False)
         if loss2:
             return True
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        loss3 = noise_creator.neutral_atom_noise(
-            "CNOT", [self.qubits[1], self.qubits[2]]
-        )
+        loss3 = noise_creator.neutral_atom_noise("CNOT", [self.qubits[1], self.qubits[2]], False)
         if loss3:
             return True
         self.circuit.append(cirq.measure(self.qubits))

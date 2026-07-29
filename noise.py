@@ -1,6 +1,7 @@
 import cirq
 import numpy as np
 import random
+import cirq_aqt
 
 class Noise:
     
@@ -37,7 +38,7 @@ class Noise:
 
     def trapped_ion_noise(self):
         #applies noise to a trapped ion qubit architecture
-        #will use a simulator for feasibility
+        
         pass
 
 

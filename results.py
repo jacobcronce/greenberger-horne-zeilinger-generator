@@ -1,6 +1,8 @@
 import cirq 
 import numpy as np
 import scipy.linalg #for the matrix operations
+from cirq_aqt.aqt_device import AQTNoiseModel
+from cirq_aqt.aqt_target_gateset import AQTTargetGateset
 
 class Results:
 
@@ -27,6 +29,16 @@ class Results:
 
         #simulate a circuit with noise and return the density matrix
 
+    def simulate_aqt_density_matrix(self, circuit):
+        circuit_no_measure = cirq.Circuit(op for op in circuit.all_operations() if not cirq.is_measurement(op))
+        aqt_gateset = AQTTargetGateset()
+        compiled_circuit = cirq.optimize_for_target_gateset(circuit_no_measure, gateset=aqt_gateset)
+        noise_model = AQTNoiseModel()
+        noisy_circuit = compiled_circuit.with_noise(noise_model)
+        toReturn = self.DM_Simulator.simulate(noisy_circuit)
+        self.density_matrix = toReturn.final_density_matrix
+        return self.density_matrix
+    
     def density_matrix_from_statevector(self, statevector):
         statevector = np.asarray(statevector, dtype=np.complex128)
         return np.outer(statevector, np.conjugate(statevector))
@@ -111,19 +123,30 @@ class Results:
         }
     #this method is specific for neutral atom qubits as the qubits themselves are lost
 
-    def show_results(self, creator, results, circuit):
+    def show_results(self, creator, results, circuit, is_trapped_ion):
         if creator.qubit_loss:
             print(results.qubit_loss_metrics)
         else:
-            statevector = results.simulate_statevector(circuit)
-            density_matrix = results.simulate_density_matrix(circuit)
-            print("Statevector: ")
-            print(statevector)
-            print("\n Density Matrix: ")
-            print(density_matrix)
-            dm_from_sv = results.density_matrix_from_statevector(statevector)
-            print("\n Density Matrix from Statevector: ")
-            print(dm_from_sv)
+            if(is_trapped_ion):
+                statevector = results.simulate_statevector(circuit)
+                density_matrix = results.simulate_aqt_density_matrix(circuit)
+                print("Statevector: ")
+                print(statevector)
+                print("\n Density Matrix: ")
+                print(density_matrix)
+                dm_from_sv = results.density_matrix_from_statevector(statevector)
+                print("\n Density Matrix from Statevector: ")
+                print(dm_from_sv)
+            else:
+                statevector = results.simulate_statevector(circuit)
+                density_matrix = results.simulate_density_matrix(circuit)
+                print("Statevector: ")
+                print(statevector)
+                print("\n Density Matrix: ")
+                print(density_matrix)
+                dm_from_sv = results.density_matrix_from_statevector(statevector)
+                print("\n Density Matrix from Statevector: ")
+                print(dm_from_sv)
 
             #Fidelity
             fid = results.fidelity(dm_from_sv, density_matrix)
