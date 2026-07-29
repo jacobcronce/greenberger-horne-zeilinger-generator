@@ -1,12 +1,11 @@
 import cirq 
 import numpy as np
 import scipy.linalg #for the matrix operations
-import cirq_aqt
 
 class Results:
 
     #Computes analysis metrics for quantum circuits.  
-    
+
 
     def __init__(self):
         self.statevector = None
@@ -25,14 +24,14 @@ class Results:
         toReturn = self.DM_Simulator.simulate(circuit)
         self.density_matrix = toReturn.final_density_matrix
         return self.density_matrix
-        
+
         #simulate a circuit with noise and return the density matrix
 
     def density_matrix_from_statevector(self, statevector):
         statevector = np.asarray(statevector, dtype=np.complex128)
         return np.outer(statevector, np.conjugate(statevector))
         #Creates a denstiy matrix from a statevector
-    
+
     def fidelity(self, state1, state2):
 
         if state1.ndim == 1:
@@ -80,7 +79,7 @@ class Results:
 
     def purity(self, density_matrix):
         return np.trace(density_matrix @ density_matrix)
-        
+
         #Compute the purity
         #return a double
     def trace_distance(self, state1, state2):
@@ -102,7 +101,7 @@ class Results:
         #compute the average of all metrics
         #this includes fidelity, von neumann entropy, purity, and trace distance
         #also mean, std, min, max etc. 
-    def neutral_atom_metrics(self):
+    def qubit_loss_metrics(self):
         return{
             "fidelity": 0.0,
             "density_matrix": "N/A",
@@ -111,3 +110,54 @@ class Results:
             "trace_distance": "N/A"
         }
     #this method is specific for neutral atom qubits as the qubits themselves are lost
+
+    def show_results(self, creator, results, circuit):
+        if creator.qubit_loss:
+            print(results.qubit_loss_metrics)
+        else:
+            statevector = results.simulate_statevector(circuit)
+            density_matrix = results.simulate_density_matrix(circuit)
+            print("Statevector: ")
+            print(statevector)
+            print("\n Density Matrix: ")
+            print(density_matrix)
+            dm_from_sv = results.density_matrix_from_statevector(statevector)
+            print("\n Density Matrix from Statevector: ")
+            print(dm_from_sv)
+
+            #Fidelity
+            fid = results.fidelity(dm_from_sv, density_matrix)
+            print("\n Fidelity: ")
+            print(fid)
+
+            #Von Neumann Entropy
+            entropy = results.von_neumann_entropy(density_matrix)
+            print("\n Von Neumann Entropy: ")
+            print(entropy)
+
+            #Purity
+            purity = results.purity(density_matrix)
+            print(np.real(purity))
+
+            #Trace Distance
+            trace_dist = results.trace_distance(dm_from_sv, density_matrix)
+            print("\n Trace Distance: ")
+            print(trace_dist)
+
+            #Check if valid density matrix
+            valid = results.is_density_matrix(density_matrix)
+            print("\n Is Valid Density Matrix: ")
+            print(valid)
+
+            #Partial Trace
+            num_qubits = len(circuit.all_qubits())
+
+            if num_qubits > 1:
+                reduced_dm = results.partial_trace(
+                    density_matrix,
+                    keep=[0],
+                    num_qubits=num_qubits
+                )
+
+                print("\nReduced Density Matrix:")
+                print(reduced_dm)
