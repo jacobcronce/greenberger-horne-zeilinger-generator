@@ -1,5 +1,6 @@
 from results import Results
 from setup import Setup
+from visualization import Visualization
 import numpy as np
 
 creator = Setup(3)
@@ -38,4 +39,6 @@ else:
     results = Results()
     results.show_results(creator, results, circuit, False)
 
+visual = Visualization(circuit, creator.get_qubits())
+visual.attempt_visualization()
 

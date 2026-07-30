@@ -160,6 +160,7 @@ class Results:
 
             #Purity
             purity = results.purity(density_matrix)
+            print("\n Purity: ")
             print(np.real(purity))
 
             #Trace Distance
