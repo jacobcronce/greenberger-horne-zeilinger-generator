@@ -39,6 +39,7 @@ else:
     results = Results()
     results.show_results(creator, results, circuit, False)
 
-visual = Visualization(circuit, creator.get_qubits())
+visual = Visualization(circuit, creator.get_qubits(), results.get_density_matrix())
 visual.attempt_visualization()
+visual.plot_density_matrix()
 

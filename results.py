@@ -44,6 +44,9 @@ class Results:
         return np.outer(statevector, np.conjugate(statevector))
         #Creates a denstiy matrix from a statevector
 
+    def get_density_matrix(self):
+        return self.density_matrix
+
     def fidelity(self, state1, state2):
 
         if state1.ndim == 1:
@@ -125,7 +128,7 @@ class Results:
 
     def show_results(self, creator, results, circuit, is_trapped_ion):
         if creator.qubit_loss:
-            print(results.qubit_loss_metrics)
+            print(results.qubit_loss_metrics())
         else:
             if(is_trapped_ion):
                 statevector = results.simulate_statevector(circuit)
