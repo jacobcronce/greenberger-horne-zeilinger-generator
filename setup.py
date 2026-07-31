@@ -11,66 +11,17 @@ class Setup:
 
     def create_qubits(self):
         # create a list of qubits for the circuit
-        self.qubits = cirq.NamedQubit.range(self.num_qubits, prefix="q")
+        self.qubits = [cirq.GridQubit(5, 6), cirq.GridQubit(5, 7), cirq.GridQubit(5, 8)]
 
     def get_qubits(self):
         return self.qubits
 
-    def create_superconducting_circuit(self):
-        # create a GHZ state circuit with the specified number of qubits
-        self.circuit = cirq.Circuit()
-        noise_creator = Noise(self.circuit)
-        self.circuit.append(cirq.H(self.qubits[0]))
-        noise_creator.superconducting_noise("H", [self.qubits[0]])
-        self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        noise_creator.superconducting_noise("CNOT", [self.qubits[0], self.qubits[1]])
-        self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        noise_creator.superconducting_noise("CNOT", [self.qubits[1], self.qubits[2]])
-
-    def create_trapped_ion_circuit(self):
+    def create_circuit(self):
         # create a GHZ state circuit with the specified number of qubits
         self.circuit = cirq.Circuit()
         self.circuit.append(cirq.H(self.qubits[0]))
         self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
         self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-
-    def create_neutral_atom_circuit(self):
-        # create a GHZ state circuit with the specified number of qubits
-        self.circuit = cirq.Circuit()
-        noise_creator = Noise(self.circuit)
-        self.circuit.append(cirq.H(self.qubits[0]))
-        loss1 = noise_creator.neutral_atom_noise("H", [self.qubits[0]], True)
-        if loss1:
-            self.qubit_loss = True
-            return 
-        self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        loss2 = noise_creator.neutral_atom_noise("CNOT", [self.qubits[0], self.qubits[1]], False)
-        if loss2:
-            return True
-        self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        loss3 = noise_creator.neutral_atom_noise("CNOT", [self.qubits[1], self.qubits[2]], False)
-        if loss3:
-            return True
-        return False
-
-    def create_photonic_circuit(self):
-        # create a GHZ state circuit with the specified number of qubits
-        self.circuit = cirq.Circuit()
-        noise_creator = Noise(self.circuit)
-        self.circuit.append(cirq.H(self.qubits[0]))
-        loss1 = noise_creator.photonic_noise("H", [self.qubits[0]])
-        if loss1:
-            self.qubit_loss = True
-            return 
-        self.circuit.append(cirq.CNOT(self.qubits[0], self.qubits[1]))
-        loss2 = noise_creator.photonic_noise("CNOT", [self.qubits[0], self.qubits[1]])
-        if loss2:
-            return True
-        self.circuit.append(cirq.CNOT(self.qubits[1], self.qubits[2]))
-        loss3 = noise_creator.photonic_noise("CNOT", [self.qubits[1], self.qubits[2]])
-        if loss3:
-            return True
-        return False
 
     def get_circuit(self):
         # return the created circuit

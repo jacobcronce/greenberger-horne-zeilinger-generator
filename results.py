@@ -3,6 +3,8 @@ import numpy as np
 import scipy.linalg #for the matrix operations
 from cirq_aqt.aqt_device import AQTNoiseModel
 from cirq_aqt.aqt_target_gateset import AQTTargetGateset
+import cirq_google
+from superconducting_noise import Noise
 
 class Results:
 
@@ -15,14 +17,20 @@ class Results:
         self.DM_Simulator = cirq.DensityMatrixSimulator()
         self.simulator = cirq.Simulator()
 
-    def simulate_statevector(self, circuit):
+    def simulate_ideal_statevector(self, circuit):
         result = self.simulator.simulate(circuit)
         self.statevector = result.final_state_vector
         return self.statevector
 
         #simulate a circuit and return the statevector
 
-    def simulate_density_matrix(self, circuit):
+    def simulate_superconducting_density_matrix(self, circuit):
+        circuit_no_measure = cirq.Circuit(op for op in circuit.all_operations() if not cirq.is_measurement(op))
+        target_gateset = cirq_google.SycamoreTargetGateset()
+        compiled_circuit = cirq.optimize_for_target_gateset(circuit_no_measure, gateset=target_gateset)
+        noise_props = cirq_google.engine.load_device_noise_properties("willow_pink")
+        noise_model = cirq_google.NoiseModelFromGoogleNoiseProperties(noise_props)
+        circuit = compiled_circuit.with_noise(noise_model)
         toReturn = self.DM_Simulator.simulate(circuit)
         self.density_matrix = toReturn.final_density_matrix
         return self.density_matrix
@@ -79,21 +87,25 @@ class Results:
     def is_density_matrix(self, matrix):
         matrix = np.asarray(matrix)
         if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+            print(1)
             return False
-        if not np.allclose(matrix, matrix.conj().T, atol=1e-8):
+        if not np.allclose(matrix, matrix.conj().T, atol=1e-6):
             #Hermitian check
+            print(2)
             return False
         if not np.isclose(np.trace(matrix), 1.0, atol=1e-8):
             #Trace = 1.0 check
+            print(3)
             return False
         eigvals = np.linalg.eigvalsh(matrix)
         if np.any(eigvals < -1e-8):
+            print(4)
             return False #positive semidefinite check
         return True
         #determine if a matrix is a valid density matrix
 
     def purity(self, density_matrix):
-        return np.trace(density_matrix @ density_matrix)
+        return np.real(np.trace(density_matrix @ density_matrix))
 
         #Compute the purity
         #return a double
@@ -116,75 +128,58 @@ class Results:
         #compute the average of all metrics
         #this includes fidelity, von neumann entropy, purity, and trace distance
         #also mean, std, min, max etc. 
-    def qubit_loss_metrics(self):
-        return{
-            "fidelity": 0.0,
-            "density_matrix": "N/A",
-            "entropy": "N/A",
-            "purity": "N/A",
-            "trace_distance": "N/A"
-        }
-    #this method is specific for neutral atom qubits as the qubits themselves are lost
 
     def show_results(self, creator, results, circuit, is_trapped_ion):
-        if creator.qubit_loss:
-            print(results.qubit_loss_metrics())
+        if(is_trapped_ion):
+            statevector = results.simulate_ideal_statevector(circuit)
+            density_matrix = results.simulate_aqt_density_matrix(circuit)
+            print("Statevector: ")
+            print(statevector)
+            print("\n Density Matrix: ")
+            print(density_matrix)
+            ideal_dm_from_sv = results.density_matrix_from_statevector(statevector)
+            print("\n Density Matrix from Statevector: ")
+            print(ideal_dm_from_sv)
         else:
-            if(is_trapped_ion):
-                statevector = results.simulate_statevector(circuit)
-                density_matrix = results.simulate_aqt_density_matrix(circuit)
-                print("Statevector: ")
-                print(statevector)
-                print("\n Density Matrix: ")
-                print(density_matrix)
-                dm_from_sv = results.density_matrix_from_statevector(statevector)
-                print("\n Density Matrix from Statevector: ")
-                print(dm_from_sv)
-            else:
-                statevector = results.simulate_statevector(circuit)
-                density_matrix = results.simulate_density_matrix(circuit)
-                print("Statevector: ")
-                print(statevector)
-                print("\n Density Matrix: ")
-                print(density_matrix)
-                dm_from_sv = results.density_matrix_from_statevector(statevector)
-                print("\n Density Matrix from Statevector: ")
-                print(dm_from_sv)
+            statevector = results.simulate_ideal_statevector(circuit)
+            density_matrix = results.simulate_superconducting_density_matrix(circuit)
+            print("Statevector: ")
+            print(statevector)
+            print("\n Density Matrix: ")
+            print(density_matrix)
+            ideal_dm_from_sv = results.density_matrix_from_statevector(statevector)
+            print("\n Density Matrix from Statevector: ")
+            print(ideal_dm_from_sv)
 
-            #Fidelity
-            fid = results.fidelity(dm_from_sv, density_matrix)
-            print("\n Fidelity: ")
-            print(fid)
+        #Fidelity
+        fid = results.fidelity(ideal_dm_from_sv, density_matrix)
+        print("\n Fidelity: ")
+        print(fid)
 
-            #Von Neumann Entropy
-            entropy = results.von_neumann_entropy(density_matrix)
-            print("\n Von Neumann Entropy: ")
-            print(entropy)
+        #Von Neumann Entropy
+        entropy = results.von_neumann_entropy(density_matrix)
+        print("\n Von Neumann Entropy: ")
+        print(entropy)
 
-            #Purity
-            purity = results.purity(density_matrix)
-            print("\n Purity: ")
-            print(np.real(purity))
+        #Purity
+        purity = results.purity(density_matrix)
+        print("\n Purity: ")
+        print(np.real(purity))
 
-            #Trace Distance
-            trace_dist = results.trace_distance(dm_from_sv, density_matrix)
-            print("\n Trace Distance: ")
-            print(trace_dist)
+        #Trace Distance
+        trace_dist = results.trace_distance(ideal_dm_from_sv, density_matrix)
+        print("\n Trace Distance: ")
+        print(trace_dist)
 
-            #Check if valid density matrix
-            valid = results.is_density_matrix(density_matrix)
-            print("\n Is Valid Density Matrix: ")
-            print(valid)
+        #Check if valid density matrix
+        valid = results.is_density_matrix(density_matrix)
+        print("\n Is Valid Density Matrix: ")
+        print(valid)
 
-            #Partial Trace
-            num_qubits = len(circuit.all_qubits())
+        #Partial Trace
+        num_qubits = len(circuit.all_qubits())
 
-            if num_qubits > 1:
-                reduced_dm = results.partial_trace(
-                    density_matrix,
-                    keep=[0],
-                    num_qubits=num_qubits
-                )
-
-                print("\nReduced Density Matrix:")
-                print(reduced_dm)
+        if num_qubits > 1:
+            reduced_dm = results.partial_trace(density_matrix, keep=[0], num_qubits=num_qubits)
+            print("\nReduced Density Matrix:")
+            print(reduced_dm)
